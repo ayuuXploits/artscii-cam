@@ -1,4 +1,4 @@
-# ASCII CAM
+# ArtSCII CAM
 
 A real-time ASCII art camera and image converter that runs entirely in the browser — no server, no dependencies, no build step.
 
@@ -21,8 +21,8 @@ A real-time ASCII art camera and image converter that runs entirely in the brows
 ## Quick Start
 
 ```bash
-git clone https://github.com/your-username/ascii-cam.git
-cd ascii-cam
+git clone https://github.com/ayuuXPploits/artscii-cam.git
+cd artscii-cam
 # Serve over HTTP (required for camera + canvas pixel access)
 npx serve .
 # or
