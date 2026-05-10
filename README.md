@@ -2,7 +2,7 @@
 
 A real-time ASCII art camera and image converter that runs entirely in the browser — no server, no dependencies, no build step.
 
-![ASCII CAM screenshot](docs/screenshot.png)
+![ASCII CAM screenshot](artscii.png)
 
 ## Features
 
