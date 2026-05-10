@@ -1,0 +1,16 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Node (if anyone adds a dev server)
+node_modules/
+package-lock.json
+
+# Build output (none currently, but just in case)
+dist/

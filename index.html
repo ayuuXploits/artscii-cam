@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ASCII CAM</title>
+<link rel="stylesheet" href="src/styles.css">
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+</head>
+<body>
+<div id="app">
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="s-title">// SETTINGS</div>
+
+    <!-- Source -->
+    <div class="s-section">
+      <div class="s-label">Source</div>
+      <div class="grid2">
+        <button class="pill active" data-action="setSource" data-value="camera">CAMERA</button>
+        <button class="pill" data-action="setSource" data-value="image" id="img-btn">IMAGE</button>
+      </div>
+      <input type="file" id="img-upload" accept="image/*" style="display:none">
+    </div>
+
+    <!-- Char Set -->
+    <div class="s-section" id="charset-section">
+      <div class="s-label">Char Set</div>
+      <div class="grid2">
+        <button class="pill active" data-action="setCharSet" data-value="detailed">DETAIL</button>
+        <button class="pill" data-action="setCharSet" data-value="simple">SIMPLE</button>
+        <button class="pill" data-action="setCharSet" data-value="blocks">BLOCKS</button>
+        <button class="pill" data-action="setCharSet" data-value="binary">BINARY</button>
+        <button class="pill" data-action="setCharSet" data-value="matrix">MATRIX</button>
+        <button class="pill" data-action="setCharSet" data-value="braille">BRAILLE</button>
+        <button class="pill" data-action="setCharSet" data-value="minimal">DOTS</button>
+        <button class="pill" data-action="setCharSet" data-value="custom_chars">CUSTOM</button>
+      </div>
+      <input type="text" id="custom-chars-input" placeholder="type chars light→dark" style="display:none">
+    </div>
+
+    <!-- Font Size -->
+    <div class="s-section">
+      <div class="s-label">Font Size</div>
+      <div class="slider-row">
+        <span>S</span>
+        <input type="range" min="7" max="20" value="13" step="1" id="font-slider">
+        <span>L</span>
+        <span class="val" id="font-val">13</span>
+      </div>
+    </div>
+
+    <!-- Color Mode -->
+    <div class="s-section" id="colormode-section">
+      <div class="s-label">Color Mode</div>
+      <div class="grid2">
+        <button class="cm-btn active" data-action="setColorMode" data-value="real">REAL<span class="cm-swatch" style="background:linear-gradient(90deg,#f00,#0f0,#00f)"></span></button>
+        <button class="cm-btn" data-action="setColorMode" data-value="green">GREEN<span class="cm-swatch" style="background:linear-gradient(90deg,#001,#0f4)"></span></button>
+        <button class="cm-btn" data-action="setColorMode" data-value="amber">AMBER<span class="cm-swatch" style="background:linear-gradient(90deg,#110,#fa0)"></span></button>
+        <button class="cm-btn" data-action="setColorMode" data-value="cyan">CYAN<span class="cm-swatch" style="background:linear-gradient(90deg,#001,#0ff)"></span></button>
+        <button class="cm-btn" data-action="setColorMode" data-value="red">RED<span class="cm-swatch" style="background:linear-gradient(90deg,#100,#f44)"></span></button>
+        <button class="cm-btn" data-action="setColorMode" data-value="purple">PURP<span class="cm-swatch" style="background:linear-gradient(90deg,#101,#c4f)"></span></button>
+        <button class="cm-btn" data-action="setColorMode" data-value="white">WHITE<span class="cm-swatch" style="background:linear-gradient(90deg,#222,#fff)"></span></button>
+        <button class="cm-btn" data-action="setColorMode" data-value="rainbow">RAIN<span class="cm-swatch" style="background:linear-gradient(90deg,#f00,#ff0,#0f0,#00f,#f0f)"></span></button>
+        <button class="cm-btn" data-action="setColorMode" data-value="custom" style="grid-column:span 2">CUSTOM<span class="cm-swatch" id="custom-swatch" style="background:linear-gradient(90deg,#000,#f0f)"></span></button>
+      </div>
+      <div id="custom-wrap">
+        <div class="color-row"><span>Dark</span><input type="color" id="cc-dark" value="#000000"><span id="cc-dh">#000000</span></div>
+        <div class="color-row"><span>Bright</span><input type="color" id="cc-bright" value="#ff00ff"><span id="cc-bh">#ff00ff</span></div>
+      </div>
+    </div>
+
+    <!-- Image Adjustments -->
+    <div class="s-section">
+      <div class="s-label">Adjust</div>
+      <div class="slider-row"><span>BRIGHT</span><input type="range" min="-100" max="100" value="0" step="1" id="brightness-slider"><span class="val" id="br-val">0</span></div>
+      <div class="slider-row"><span>CONTR</span><input type="range" min="-100" max="100" value="0" step="1" id="contrast-slider"><span class="val" id="co-val">0</span></div>
+    </div>
+
+    <!-- Background -->
+    <div class="s-section">
+      <div class="s-label">Background</div>
+      <div class="slider-row">
+        <span>◼</span>
+        <input type="range" min="0" max="60" value="10" step="1" id="bg-slider">
+        <span>◻</span>
+      </div>
+    </div>
+
+    <!-- Columns -->
+    <div class="s-section">
+      <div class="s-label">Columns</div>
+      <div class="slider-row">
+        <input type="range" min="30" max="200" value="90" step="5" id="cols-slider">
+        <span class="val" id="cols-val">90</span>
+      </div>
+    </div>
+
+    <!-- FPS -->
+    <div class="s-section" id="fps-section">
+      <div class="s-label">FPS Cap</div>
+      <div class="grid3">
+        <button class="pill" data-action="setFps" data-value="10">10</button>
+        <button class="pill active" data-action="setFps" data-value="20">20</button>
+        <button class="pill" data-action="setFps" data-value="30">30</button>
+      </div>
+    </div>
+
+    <!-- Toggles -->
+    <div class="s-section">
+      <div class="toggle-row"><span>MIRROR</span><div class="tog on" id="t-mirror" data-toggle="mirror"></div></div>
+      <div class="toggle-row" style="margin-top:5px"><span>INVERT</span><div class="tog" id="t-invert" data-toggle="invert"></div></div>
+    </div>
+
+    <!-- FX -->
+    <div class="s-section">
+      <div class="s-label">Effects</div>
+      <div id="fx-grid">
+        <button class="pill" data-fx="glitch">GLITCH</button>
+        <button class="pill" data-fx="rain">RAIN</button>
+        <button class="pill" data-fx="hue">HUE ROT</button>
+        <button class="pill" data-fx="edge">EDGES</button>
+        <button class="pill" data-fx="ca">CHROM AB</button>
+        <button class="pill" data-fx="scan">SCANLINE</button>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="s-section">
+      <button class="act" id="pause-btn" style="display:none">⏸ PAUSE</button>
+      <button class="act" id="copy-btn">📋 COPY TEXT</button>
+      <button class="act" id="save-btn" style="display:none">💾 SAVE PNG</button>
+      <button class="act" id="fullscreen-btn">⛶ FULLSCREEN</button>
+      <div class="kbd">SPACE=pause  S=save  F=full  ←→=cols</div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div id="main-col">
+    <div id="header">
+      <span id="title">ASCII CAM</span>
+      <span id="status">// ready</span>
+      <span id="fps-badge"></span>
+    </div>
+    <div id="viewport">
+      <canvas id="ascii-canvas"></canvas>
+      <div id="overlay">
+        <div>[ NO SIGNAL ]</div>
+        <button class="act hi" id="init-camera-btn" style="width:auto;padding:10px 28px;font-size:14px;">INIT CAMERA</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<video id="video" autoplay playsinline muted></video>
+
+<script src="src/config.js"></script>
+<script src="src/state.js"></script>
+<script src="src/renderer.js"></script>
+<script src="src/effects.js"></script>
+<script src="src/ui.js"></script>
+<script src="src/app.js"></script>
+</body>
+</html>
