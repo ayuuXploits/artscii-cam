@@ -47,7 +47,7 @@ ascii-cam/
 │   ├── app.js          # Camera init, image loading, rAF loop
 │   └── styles.css      # All CSS (CSS custom properties, responsive)
 └── docs/
-    └── screenshot.png  # (add your own)
+    └── screenshot.png  
 ```
 
 ## Keyboard Shortcuts
