@@ -29,7 +29,7 @@ npx serve .
 python3 -m http.server 8080
 ```
 
-Then open `http://localhost:8080` in your browser and click **INIT CAMERA**.
+Then open `http://localhost:8080` in your browser and click **INIT CAMERA**.  
 
 > **Note:** The app must be served over HTTP/HTTPS (not opened as a `file://` URL) for camera access and canvas `getImageData()` to work.
 
