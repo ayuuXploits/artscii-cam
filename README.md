@@ -114,16 +114,16 @@ Each source file has a single responsibility — no file exceeds its domain. The
 
 ## 🔤 Character Sets
 
-| Set | Characters used | Best for |
-|-----|----------------|----------|
-| **Detailed** | Full density ramp | Portraits, high-detail scenes |
-| **Simple** | Short ramp | Clean, readable output |
-| **Blocks** | `█ ▓ ▒ ░ ` | Bold, graphic feel |
-| **Binary** | `0 1` | Tech / hacker aesthetic |
-| **Matrix** | Katakana + symbols | Matrix rain effect |
-| **Braille** | Braille unicode | Ultra-fine grain |
-| **Dots** | `· : ; o O` | Minimal, elegant |
-| **Custom** | User-defined string | Anything you want |
+| Set          | Characters used | Best for |
+|--------------|---------------------|----------|
+| **Detailed** | Full density ramp   | Portraits, high-detail scenes |
+| **Simple**   | Short ramp          | Clean, readable output |
+| **Blocks**   | `█ ▓ ▒ ░ `          | Bold, graphic feel |
+| **Binary**   | `0 1`               | Tech / hacker aesthetic |
+| **Matrix**   | Katakana + symbols  | Matrix rain effect |
+| **Braille**  | Braille unicode     | Ultra-fine grain |
+| **Dots**     | `· : ; o O`         | Minimal, elegant |
+| **Custom**   | User-defined string | Anything you want |
 
 ---
 
