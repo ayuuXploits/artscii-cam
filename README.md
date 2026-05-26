@@ -15,7 +15,7 @@
 [![Firefox](https://img.shields.io/badge/Firefox-121+-FF7139?style=for-the-badge&logo=firefox&logoColor=white)](https://www.mozilla.org/firefox/)
 [![Safari](https://img.shields.io/badge/Safari-17+-000000?style=for-the-badge&logo=safari&logoColor=white)](https://www.apple.com/safari/)
 
-[**🚀 Live Demo**](https://ayuuXPploits.github.io/artscii-cam/) · [**🐛 Report Bug**](...) · [**✨ Request Feature**](...)
+[**🚀 Live Demo**](https://ayuuXploits.github.io/artscii-cam/) · [**🐛 Report Bug**](...) · [**✨ Request Feature**](...)
 <br/>
 
 *No server. No dependencies. No build step. Just open and create.*
