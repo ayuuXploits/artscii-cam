@@ -15,7 +15,7 @@
 [![Firefox](https://img.shields.io/badge/Firefox-121+-FF7139?style=for-the-badge&logo=firefox&logoColor=white)](https://www.mozilla.org/firefox/)
 [![Safari](https://img.shields.io/badge/Safari-17+-000000?style=for-the-badge&logo=safari&logoColor=white)](https://www.apple.com/safari/)
 
-[**🚀 Live Demo**](https://ayuuXploits.github.io/artscii-cam/) &nbsp;·&nbsp; [**🐛 Report Bug**](https://github.com/ayuuXPploits/artscii-cam/issues/new?assignees=&labels=bug&template=bug_report.md&title=%5BBug%5D+) [**✨ Request Feature**](https://github.com/ayuuXploits/stellar/issues/new?assignees=&labels=enhancement&template=feature_request.md&title=%5BFeature%5D+)
+[**🚀 Live Demo**](https://ayuuXploits.github.io/artscii-cam/) &nbsp;·&nbsp; [**🐛 Report Bug**](https://github.com/ayuuXploits/artscii-cam/issues/new?assignees=&labels=bug&template=bug_report.md&title=%5BBug%5D+) [**✨ Request Feature**](https://github.com/ayuuXploits/artscii-cam/issues/new?assignees=&labels=enhancement&template=feature_request.md&title=%5BFeature%5D+)
 
 <br/>
 
