@@ -184,7 +184,7 @@ Effects can be stacked and combined freely.
 | `F` | Toggle fullscreen |
 | `←` | Decrease column count |
 | `→` | Increase column count |
-
+ 
 ---
 
 ## 💾 Export Options
