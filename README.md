@@ -49,12 +49,12 @@
 
 ## ✨ Features
 
-| Category | Details |
-|----------|---------|
+| Category |                Details |
+|----------|-------------------------|
 | 📷 **Live Camera** | Real-time webcam feed rendered as ASCII art |
 | 🖼️ **Image Upload** | Static image → ASCII conversion |
 | 🔤 **Character Sets** | 8 sets — Detailed, Simple, Blocks, Binary, Matrix, Braille, Dots, Custom |
-| 🎨 **Color Modes** | 9 modes — Real, Green, Amber, Cyan, Red, Purple, White, Rainbow, Custom gradient |
+| 🎨 **Color Modes**   | 9 modes — Real, Green, Amber, Cyan, Red, Purple, White, Rainbow, Custom gradient |
 | ✨ **Visual Effects** | 6 effects — Glitch, Matrix Rain, Hue Rotation, Edge Detection (Sobel), Chromatic Aberration, Scanlines |
 | 🎛️ **Adjustments** | Font size, column count, brightness, contrast, background darkness |
 | 🔁 **Transforms** | Mirror & Invert toggles |
