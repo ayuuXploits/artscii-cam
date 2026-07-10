@@ -74,7 +74,6 @@
 ```bash
 git clone https://github.com/ayuuXPploits/artscii-cam.git
 cd artscii-cam
-
 ```
 
 Then pick any local server:
