@@ -221,6 +221,7 @@ ArtSCII CAM is a fully static site. No build command, no environment variables.
 
 ```
 Settings → Pages → Deploy from branch → main / (root)
+
 ```
 
 ### Netlify / Vercel
