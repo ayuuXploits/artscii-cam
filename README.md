@@ -245,6 +245,7 @@ For live-reload during development:
 
 ```bash
 npx browser-sync start --server --files "**/*.html,**/*.js,**/*.css"
+
 ```
 
 ### Adding a new character set
