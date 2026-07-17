@@ -88,7 +88,6 @@ python3 -m http.server 8080
 
 # Option C — live-reload dev server
 npx browser-sync start --server --files "**/*.html,**/*.js,**/*.css"
-
 ```
 
 Open `http://localhost:8080` in your browser and click **INIT CAMERA**.
