@@ -132,7 +132,7 @@ Each source file has a single responsibility — no file exceeds its domain. The
 
 ## 🎨 Color Modes
 
-| Mode | Description |
+| Mode        | Description |
 |-------------|-------------|
 | **Real** | Samples actual pixel color from the source |
 | **Green**    | Classic terminal green on black |
