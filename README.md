@@ -49,9 +49,9 @@
 
 ## ✨ Features
 
-| Category               |                Details |
-|------------------------|-------------------------|
-| 📷 **Live Camera**     | Real-time webcam feed rendered as ASCII art |
+| Category               |                Details                                                                                 |
+|------------------------|--------------------------------------------------------------------------------------------------------|
+| 📷 **Live Camera**     | Real-time webcam feed rendered as ASCII art                                                            |
 | 🖼️ **Image Upload**    | Static image → ASCII conversion |
 | 🔤 **Character Sets**  | 8 sets — Detailed, Simple, Blocks, Binary, Matrix, Braille, Dots, Custom |
 | 🎨 **Color Modes**     | 9 modes — Real, Green, Amber, Cyan, Red, Purple, White, Rainbow, Custom gradient |
