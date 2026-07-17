@@ -58,10 +58,10 @@
 | ✨ **Visual Effects**  | 6 effects — Glitch, Matrix Rain, Hue Rotation, Edge Detection (Sobel), Chromatic Aberration, Scanlines |
 | 🎛️ **Adjustments**     | Font size, column count, brightness, contrast, background darkness                                     |
 | 🔁 **Transforms**      | Mirror & Invert toggles                                                                                |
-| ⏱️ **FPS Cap**         | 10 / 20 / 30 FPS |
-| 💾 **Export**          | Save as PNG or copy plain-text ASCII to clipboard |
-| ⛶ **Fullscreen**       | Fullscreen mode + keyboard shortcuts |
-| 🚫 **Zero Deps**       | Plain HTML + CSS + JS — no npm, no bundler, no framework |
+| ⏱️ **FPS Cap**         | 10 / 20 / 30 FPS                                                                                       |
+| 💾 **Export**          | Save as PNG or copy plain-text ASCII to clipboard                                                      |
+| ⛶ **Fullscreen**       | Fullscreen mode + keyboard shortcuts                                                                   |
+| 🚫 **Zero Deps**       | Plain HTML + CSS + JS — no npm, no bundler, no framework                                               |
 
 ---
 
