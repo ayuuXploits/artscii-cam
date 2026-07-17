@@ -52,12 +52,12 @@
 | Category               |                Details                                                                                 |
 |------------------------|--------------------------------------------------------------------------------------------------------|
 | 📷 **Live Camera**     | Real-time webcam feed rendered as ASCII art                                                            |
-| 🖼️ **Image Upload**    | Static image → ASCII conversion |
-| 🔤 **Character Sets**  | 8 sets — Detailed, Simple, Blocks, Binary, Matrix, Braille, Dots, Custom |
-| 🎨 **Color Modes**     | 9 modes — Real, Green, Amber, Cyan, Red, Purple, White, Rainbow, Custom gradient |
+| 🖼️ **Image Upload**    | Static image → ASCII conversion                                                                        |
+| 🔤 **Character Sets**  | 8 sets — Detailed, Simple, Blocks, Binary, Matrix, Braille, Dots, Custom                               |
+| 🎨 **Color Modes**     | 9 modes — Real, Green, Amber, Cyan, Red, Purple, White, Rainbow, Custom gradient                       |
 | ✨ **Visual Effects**  | 6 effects — Glitch, Matrix Rain, Hue Rotation, Edge Detection (Sobel), Chromatic Aberration, Scanlines |
-| 🎛️ **Adjustments**     | Font size, column count, brightness, contrast, background darkness |
-| 🔁 **Transforms**      | Mirror & Invert toggles |
+| 🎛️ **Adjustments**     | Font size, column count, brightness, contrast, background darkness                                     |
+| 🔁 **Transforms**      | Mirror & Invert toggles                                                                                |
 | ⏱️ **FPS Cap**         | 10 / 20 / 30 FPS |
 | 💾 **Export**          | Save as PNG or copy plain-text ASCII to clipboard |
 | ⛶ **Fullscreen**       | Fullscreen mode + keyboard shortcuts |
