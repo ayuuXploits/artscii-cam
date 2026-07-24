@@ -110,6 +110,7 @@ artscii-cam/
 │   └── styles.css      # All CSS (CSS custom properties, responsive)
 └── docs/
     └── artscii.png     # Screenshot / documentation assets
+
 ```
 
 Each source file has a single responsibility — no file exceeds its domain. The rendering pipeline flows: `app.js` (frame capture) → `renderer.js` (ASCII conversion) → `effects.js` (post-processing overlays).
