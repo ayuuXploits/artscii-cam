@@ -232,6 +232,7 @@ Settings → Pages → Deploy from branch → main / (root)
 Build command:   (leave empty)
 Output directory: .  (repo root)
 
+
 ```
 
 ### Any static host
