@@ -261,6 +261,7 @@ CHAR_SETS: {
   // existing sets...
   mySet: "your characters ordered light to dark",
 }
+
 ```
 
 ### Adding a new color mode
