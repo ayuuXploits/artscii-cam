@@ -1,62 +1,112 @@
 /**
- * effects.js — ASCII CAM
- * Post-process visual effects that draw on top of the ASCII canvas.
- * Depends on: state, canvas/ctx from renderer.js
+ * ASCII CAM - Post-Processing & Grid Effects
  */
 
-'use strict';
+class EffectsManager {
+  constructor() {
+    this.rainColumns = [];
+    this.lastTime = 0;
+    this.hueAngle = 0;
+  }
 
-const effects = {
-
-  /**
-   * Matrix-style falling character columns.
-   * @param {number} cols  - current column count
-   * @param {number} rows  - current row count
-   */
-  drawRain(cols, rows) {
-    if (!state.rainInitialized || state.rainCols.length !== cols) {
-      state.rainCols = Array.from({ length: cols }, () => ({
-        y:     (Math.random() * rows) | 0,
+  initRain(cols, rows) {
+    this.rainColumns = [];
+    for (let c = 0; c < cols; c++) {
+      this.rainColumns.push({
+        y: Math.random() * -rows,
         speed: 0.3 + Math.random() * 0.7,
-      }));
-      state.rainInitialized = true;
+        length: Math.floor(5 + Math.random() * 15),
+        chars: []
+      });
     }
+  }
 
-    const matrixChars = CHAR_SETS.matrix;
-    ctx.font         = `${state.fontSize}px "Share Tech Mono",monospace`;
-    ctx.textBaseline = 'top';
-
-    for (let x = 0; x < cols; x++) {
-      const drop = state.rainCols[x];
-      const ch   = matrixChars[Math.floor(Math.random() * matrixChars.length)] || '0';
-      const yPx  = (drop.y | 0) * state.fontSize;
-
-      // Bright head
-      ctx.fillStyle  = '#00ff41';
-      ctx.globalAlpha = 0.85;
-      ctx.fillText(ch, x * state.fontW, yPx);
-
-      // Dim tail one row above
-      if ((drop.y | 0) - 1 >= 0) {
-        ctx.globalAlpha = 0.3;
-        ctx.fillStyle   = '#004d14';
-        ctx.fillText(ch, x * state.fontW, yPx - state.fontSize);
-      }
-
-      ctx.globalAlpha = 1;
-
+  updateRain(cols, rows) {
+    if (this.rainColumns.length !== cols) {
+      this.initRain(cols, rows);
+    }
+    for (let c = 0; c < cols; c++) {
+      const drop = this.rainColumns[c];
       drop.y += drop.speed;
-      if (drop.y >= rows) drop.y = 0;
+      if (drop.y - drop.length > rows) {
+        drop.y = -Math.random() * 10;
+        drop.speed = 0.3 + Math.random() * 0.7;
+        drop.length = Math.floor(5 + Math.random() * 15);
+      }
     }
-  },
+  }
 
-  /**
-   * CRT-style horizontal scanline overlay.
-   */
-  drawScanlines() {
-    ctx.fillStyle = 'rgba(0,0,0,0.18)';
-    for (let y = 0; y < canvas.height; y += state.fontSize * 2) {
-      ctx.fillRect(0, y, canvas.width, Math.ceil(state.fontSize * 0.6));
+  // Sobel Edge Detection Filter on Luminance buffer
+  applySobelEdge(lumGrid, cols, rows, edgeThreshold = 35) {
+    const edgeGrid = new Uint8Array(cols * rows);
+    const dirGrid = new Uint8Array(cols * rows); // 0=none, 1=horiz, 2=vert, 3=diagF, 4=diagB
+
+    for (let y = 1; y < rows - 1; y++) {
+      for (let x = 1; x < cols - 1; x++) {
+        const idx = y * cols + x;
+
+        // 3x3 kernel samples
+        const p00 = lumGrid[(y - 1) * cols + (x - 1)];
+        const p01 = lumGrid[(y - 1) * cols + x];
+        const p02 = lumGrid[(y - 1) * cols + (x + 1)];
+
+        const p10 = lumGrid[y * cols + (x - 1)];
+        const p12 = lumGrid[y * cols + (x + 1)];
+
+        const p20 = lumGrid[(y + 1) * cols + (x - 1)];
+        const p21 = lumGrid[(y + 1) * cols + x];
+        const p22 = lumGrid[(y + 1) * cols + (x + 1)];
+
+        // Sobel kernels
+        const gx = (-p00 + p02) + 2 * (-p10 + p12) + (-p20 + p22);
+        const gy = (-p00 - 2 * p01 - p02) + (p20 + 2 * p21 + p22);
+
+        const magnitude = Math.sqrt(gx * gx + gy * gy);
+
+        if (magnitude > edgeThreshold) {
+          edgeGrid[idx] = Math.min(255, magnitude);
+          const angle = Math.atan2(gy, gx) * (180 / Math.PI);
+          const normAngle = (angle + 180) % 180;
+
+          if (normAngle >= 22.5 && normAngle < 67.5) {
+            dirGrid[idx] = 3; // /
+          } else if (normAngle >= 67.5 && normAngle < 112.5) {
+            dirGrid[idx] = 1; // - (gradient is vertical -> edge is horizontal)
+          } else if (normAngle >= 112.5 && normAngle < 157.5) {
+            dirGrid[idx] = 4; // \
+          } else {
+            dirGrid[idx] = 2; // | (gradient is horizontal -> edge is vertical)
+          }
+        }
+      }
     }
-  },
-};
+    return { edgeGrid, dirGrid };
+  }
+
+  // Hue rotation helper
+  rotateHue(r, g, b, angleDeg) {
+    const rad = (angleDeg * Math.PI) / 180;
+    const cosA = Math.cos(rad);
+    const sinA = Math.sin(rad);
+
+    const rotR = (0.213 + cosA * 0.787 - sinA * 0.213) * r +
+                 (0.715 - cosA * 0.715 - sinA * 0.715) * g +
+                 (0.072 - cosA * 0.072 + sinA * 0.928) * b;
+
+    const rotG = (0.213 - cosA * 0.213 + sinA * 0.143) * r +
+                 (0.715 + cosA * 0.285 + sinA * 0.140) * g +
+                 (0.072 - cosA * 0.072 - sinA * 0.283) * b;
+
+    const rotB = (0.213 - cosA * 0.213 - sinA * 0.787) * r +
+                 (0.715 - cosA * 0.715 + sinA * 0.715) * g +
+                 (0.072 + cosA * 0.928 + sinA * 0.072) * b;
+
+    return [
+      Math.max(0, Math.min(255, Math.round(rotR))),
+      Math.max(0, Math.min(255, Math.round(rotG))),
+      Math.max(0, Math.min(255, Math.round(rotB)))
+    ];
+  }
+}
+
+window.effectsManager = new EffectsManager();
