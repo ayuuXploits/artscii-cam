@@ -3,14 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ASCII CAM</title>
+<title>ASCII CAM // Retro Realtime Terminal Camera</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="src/styles.css">
-<link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 </head>
 <body>
 <div id="app">
   <!-- SIDEBAR -->
-  <div id="sidebar">
+  <aside id="sidebar">
     <div class="s-title">// SETTINGS</div>
 
     <!-- Source -->
@@ -36,7 +38,7 @@
         <button class="pill" data-action="setCharSet" data-value="minimal">DOTS</button>
         <button class="pill" data-action="setCharSet" data-value="custom_chars">CUSTOM</button>
       </div>
-      <input type="text" id="custom-chars-input" placeholder="type chars light→dark" style="display:none">
+      <input type="text" id="custom-chars-input" placeholder="type chars light→dark" style="display:none" autocomplete="off" spellcheck="false">
     </div>
 
     <!-- Font Size -->
@@ -64,7 +66,7 @@
         <button class="cm-btn" data-action="setColorMode" data-value="rainbow">RAIN<span class="cm-swatch" style="background:linear-gradient(90deg,#f00,#ff0,#0f0,#00f,#f0f)"></span></button>
         <button class="cm-btn" data-action="setColorMode" data-value="custom" style="grid-column:span 2">CUSTOM<span class="cm-swatch" id="custom-swatch" style="background:linear-gradient(90deg,#000,#f0f)"></span></button>
       </div>
-      <div id="custom-wrap">
+      <div id="custom-wrap" style="display:none">
         <div class="color-row"><span>Dark</span><input type="color" id="cc-dark" value="#000000"><span id="cc-dh">#000000</span></div>
         <div class="color-row"><span>Bright</span><input type="color" id="cc-bright" value="#ff00ff"><span id="cc-bh">#ff00ff</span></div>
       </div>
@@ -108,8 +110,8 @@
 
     <!-- Toggles -->
     <div class="s-section">
-      <div class="toggle-row"><span>MIRROR</span><div class="tog on" id="t-mirror" data-toggle="mirror"></div></div>
-      <div class="toggle-row" style="margin-top:5px"><span>INVERT</span><div class="tog" id="t-invert" data-toggle="invert"></div></div>
+      <div class="toggle-row"><span>MIRROR</span><div class="tog on" id="t-mirror" data-toggle="mirror" role="switch" aria-checked="true" tabindex="0"></div></div>
+      <div class="toggle-row" style="margin-top:8px"><span>INVERT</span><div class="tog" id="t-invert" data-toggle="invert" role="switch" aria-checked="false" tabindex="0"></div></div>
     </div>
 
     <!-- FX -->
@@ -133,32 +135,46 @@
       <button class="act" id="fullscreen-btn">⛶ FULLSCREEN</button>
       <div class="kbd">SPACE=pause  S=save  F=full  ←→=cols</div>
     </div>
-  </div>
+  </aside>
 
   <!-- MAIN -->
-  <div id="main-col">
-    <div id="header">
-      <span id="title">ASCII CAM</span>
-      <span id="status">// ready</span>
-      <span id="fps-badge"></span>
-    </div>
+  <main id="main-col">
+    <header id="header">
+      <div class="header-left">
+        <span id="title">ASCII CAM</span>
+        <span class="live-dot"></span>
+        <span id="status">// ready</span>
+      </div>
+      <div class="header-right">
+        <span id="res-badge">0×0 chars</span>
+        <span id="fps-badge">-- FPS</span>
+      </div>
+    </header>
+
     <div id="viewport">
       <canvas id="ascii-canvas"></canvas>
       <div id="overlay">
-        <div>[ NO SIGNAL ]</div>
-        <button class="act hi" id="init-camera-btn" style="width:auto;padding:10px 28px;font-size:14px;">INIT CAMERA</button>
+        <div class="glitch-text" data-text="[ NO SIGNAL ]">[ NO SIGNAL ]</div>
+        <p class="overlay-sub">Real-time ASCII Video Synthesizer</p>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
+          <button class="act hi" id="init-camera-btn">INIT CAMERA</button>
+          <button class="act" id="demo-btn">LOAD TEST PATTERN</button>
+        </div>
       </div>
+      <!-- Scanline overlay element -->
+      <div id="crt-overlay" class="crt-fx" style="display:none;"></div>
     </div>
-  </div>
+  </main>
 </div>
 
-<div id="toast"></div>
+<div id="toast" role="status" aria-live="polite"></div>
 <video id="video" autoplay playsinline muted></video>
 
+<!-- Source modules -->
 <script src="src/config.js"></script>
 <script src="src/state.js"></script>
-<script src="src/renderer.js"></script>
 <script src="src/effects.js"></script>
+<script src="src/renderer.js"></script>
 <script src="src/ui.js"></script>
 <script src="src/app.js"></script>
 </body>
