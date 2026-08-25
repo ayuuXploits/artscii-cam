@@ -1,209 +1,320 @@
 /**
- * renderer.js — ASCII CAM
- * Owns the sample canvas + output canvas; exposes drawFrame().
+ * ASCII CAM - Canvas Renderer & Character Synthesizer
  */
 
-'use strict';
+class AsciiRenderer {
+  constructor(canvas, state, effects) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d', { alpha: false });
+    this.state = state;
+    this.effects = effects;
 
-// ── Canvas references ────────────────────────────────────
-const canvas   = document.getElementById('ascii-canvas');
-const ctx      = canvas.getContext('2d');
-const sample   = document.createElement('canvas');
-const sCtx     = sample.getContext('2d', { willReadFrequently: true });
+    // Offscreen canvas for downsampled image processing
+    this.sampleCanvas = document.createElement('canvas');
+    this.sampleCtx = this.sampleCanvas.getContext('2d', { willReadFrequently: true });
 
-// ── Sobel helper ─────────────────────────────────────────
-function sobelAt(lum, x, y, w, h) {
-  const get = (cx, cy) =>
-    lum[Math.min(h - 1, Math.max(0, cy)) * w + Math.min(w - 1, Math.max(0, cx))];
+    // Font metrics cache
+    this.charWidth = 8;
+    this.charHeight = 14;
+    this.cachedFontSize = 0;
+    this.measureFont(this.state.get('fontSize'));
 
-  const gx =
-    -get(x-1,y-1) + get(x+1,y-1) +
-    -2*get(x-1,y) + 2*get(x+1,y) +
-    -get(x-1,y+1) + get(x+1,y+1);
-
-  const gy =
-    -get(x-1,y-1) - 2*get(x,y-1) - get(x+1,y-1) +
-     get(x-1,y+1) + 2*get(x,y+1) + get(x+1,y+1);
-
-  return Math.sqrt(gx * gx + gy * gy);
-}
-
-// ── Color functions ───────────────────────────────────────
-function getColorFn() {
-  switch (state.colorMode) {
-    case 'real':
-      return (r, g, b) => `rgb(${r},${g},${b})`;
-    case 'green':
-      return (_, __, ___, l) => `rgb(0,${l * .9 | 0},${l * .3 | 0})`;
-    case 'amber':
-      return (_, __, ___, l) => `rgb(${l * .95 | 0},${l * .6 | 0},0)`;
-    case 'cyan':
-      return (_, __, ___, l) => `rgb(0,${l * .85 | 0},${l | 0})`;
-    case 'red':
-      return (_, __, ___, l) => `rgb(${l | 0},${l * .15 | 0},${l * .15 | 0})`;
-    case 'purple':
-      return (_, __, ___, l) => `rgb(${l * .7 | 0},0,${l | 0})`;
-    case 'white':
-      return (_, __, ___, l) => `rgb(${l | 0},${l | 0},${l | 0})`;
-    case 'rainbow':
-      return (r, g, b, l) => {
-        const h = (state.hueAngle + (l / 255) * 120) % 360;
-        return `hsl(${h},100%,55%)`;
-      };
-    case 'custom':
-      return customColorFn;
-    default:
-      return (r, g, b) => `rgb(${r},${g},${b})`;
-  }
-}
-
-function customColorFn(r, g, b, lum) {
-  const t  = lum / 255;
-  const [dr, dg, db] = state.customDark;
-  const [br, bg2, bb] = state.customBright;
-  return `rgb(${(dr + (br - dr) * t) | 0},${(dg + (bg2 - dg) * t) | 0},${(db + (bb - db) * t) | 0})`;
-}
-
-// ── Main draw ────────────────────────────────────────────
-function drawFrame() {
-  const src  = state.sourceMode === 'image' ? state.imgBitmap : document.getElementById('video');
-  const srcW = state.sourceMode === 'image' ? state.imgBitmap.width  : (src.videoWidth  || 640);
-  const srcH = state.sourceMode === 'image' ? state.imgBitmap.height : (src.videoHeight || 480);
-
-  const aspect = srcH / srcW || 0.75;
-  const rows   = Math.max(1, Math.round(state.numCols * aspect * (state.fontW / state.fontSize)));
-
-  sample.width  = state.numCols;
-  sample.height = rows;
-
-  // Build CSS filter string
-  let filter = '';
-  if (state.brightness !== 0) filter += `brightness(${1 + state.brightness / 100}) `;
-  if (state.contrast   !== 0) filter += `contrast(${1 + state.contrast / 100}) `;
-  if (state.fx.hue)            filter += `hue-rotate(${state.hueAngle}deg) `;
-  sCtx.filter = filter || 'none';
-
-  if (state.mirror && state.sourceMode === 'camera') {
-    sCtx.save();
-    sCtx.translate(state.numCols, 0);
-    sCtx.scale(-1, 1);
-  }
-  sCtx.drawImage(src, 0, 0, state.numCols, rows);
-  if (state.mirror && state.sourceMode === 'camera') sCtx.restore();
-  sCtx.filter = 'none';
-
-  let pixels;
-  try {
-    pixels = sCtx.getImageData(0, 0, state.numCols, rows).data;
-  } catch (e) {
-    document.getElementById('status').textContent = '// use localhost — file:// blocked';
-    return;
+    // Dynamic animation time counter
+    this.animTime = 0;
   }
 
-  // Pre-compute luminance map for edge detection
-  let lumMap = null;
-  if (state.fx.edge) {
-    lumMap = new Float32Array(state.numCols * rows);
-    for (let i = 0; i < state.numCols * rows; i++) {
-      const p = i * 4;
-      lumMap[i] = 0.299 * pixels[p] + 0.587 * pixels[p + 1] + 0.114 * pixels[p + 2];
+  measureFont(fontSize) {
+    if (this.cachedFontSize === fontSize) return;
+    this.cachedFontSize = fontSize;
+
+    this.ctx.font = `${fontSize}px 'Share Tech Mono', monospace`;
+    const metrics = this.ctx.measureText('M');
+    this.charWidth = metrics.width || (fontSize * 0.6);
+    this.charHeight = Math.round(fontSize * 1.15);
+  }
+
+  hexToRgb(hex) {
+    let c = hex.replace('#', '');
+    if (c.length === 3) c = c.split('').map(x => x + x).join('');
+    const num = parseInt(c, 16);
+    return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
+  }
+
+  lerpColor(rgb1, rgb2, t) {
+    return [
+      Math.round(rgb1[0] + (rgb2[0] - rgb1[0]) * t),
+      Math.round(rgb1[1] + (rgb2[1] - rgb1[1]) * t),
+      Math.round(rgb1[2] + (rgb2[2] - rgb1[2]) * t)
+    ];
+  }
+
+  render(sourceMedia) {
+    if (!sourceMedia) return;
+
+    const cols = this.state.get('cols');
+    const fontSize = this.state.get('fontSize');
+    this.measureFont(fontSize);
+
+    // Get source natural dimensions
+    let srcW = sourceMedia.videoWidth || sourceMedia.naturalWidth || sourceMedia.width || 640;
+    let srcH = sourceMedia.videoHeight || sourceMedia.naturalHeight || sourceMedia.height || 480;
+
+    if (srcW === 0 || srcH === 0) return;
+
+    // Calculate aspect ratio and grid rows
+    const srcAspect = srcW / srcH;
+    const charAspect = this.charWidth / this.charHeight;
+    const rows = Math.max(10, Math.round(cols / (srcAspect / charAspect)));
+
+    this.state.set('rows', rows);
+
+    // Update sampling canvas dimensions
+    if (this.sampleCanvas.width !== cols || this.sampleCanvas.height !== rows) {
+      this.sampleCanvas.width = cols;
+      this.sampleCanvas.height = rows;
     }
-  }
 
-  // Resize output canvas
-  canvas.width  = state.numCols * state.fontW;
-  canvas.height = rows          * state.fontSize;
+    // Prepare transformation for mirroring
+    this.sampleCtx.save();
+    this.sampleCtx.imageSmoothingEnabled = true;
 
-  const bg = state.bgLevel;
-  ctx.fillStyle = `rgb(${bg},${bg},${bg})`;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const mirror = this.state.get('mirror');
+    if (mirror && this.state.get('source') === 'camera') {
+      this.sampleCtx.translate(cols, 0);
+      this.sampleCtx.scale(-1, 1);
+    }
 
-  ctx.font         = `${state.fontSize}px "Share Tech Mono",monospace`;
-  ctx.textBaseline = 'top';
+    this.sampleCtx.drawImage(sourceMedia, 0, 0, cols, rows);
+    this.sampleCtx.restore();
 
-  const maxIdx  = state.charSet.length - 1;
-  const colorFn = getColorFn();
+    // Extract pixel buffer
+    let imgData;
+    try {
+      imgData = this.sampleCtx.getImageData(0, 0, cols, rows);
+    } catch (e) {
+      return;
+    }
 
-  for (let y = 0; y < rows; y++) {
-    for (let x = 0; x < state.numCols; x++) {
-      const i = (y * state.numCols + x) * 4;
-      let r = pixels[i], g = pixels[i + 1], b = pixels[i + 2];
+    const data = imgData.data;
+    const totalPixels = cols * rows;
 
-      // Chromatic aberration — offset R and B channels horizontally
-      if (state.fx.ca) {
-        const ox = Math.min(state.numCols - 1, x + 1);
-        const bx = Math.max(0, x - 1);
-        r = pixels[(y * state.numCols + ox) * 4];
-        b = pixels[(y * state.numCols + bx) * 4 + 2];
+    // Pre-calculate contrast factor
+    const contrast = this.state.get('contrast'); // -100 to 100
+    const contrastFactor = (259 * (contrast + 255)) / (255 * (259 - contrast));
+    const brightness = this.state.get('brightness') * 2.55; // -255 to 255
+    const invert = this.state.get('invert');
+    const fx = this.state.get('fx');
+
+    this.animTime += 0.05;
+    if (fx.hue) {
+      this.effects.hueAngle = (this.effects.hueAngle + 2) % 360;
+    }
+
+    // Pixel buffers
+    const lumGrid = new Uint8Array(totalPixels);
+    const rGrid = new Uint8Array(totalPixels);
+    const gGrid = new Uint8Array(totalPixels);
+    const bGrid = new Uint8Array(totalPixels);
+
+    for (let i = 0; i < totalPixels; i++) {
+      let r = data[i * 4];
+      let g = data[i * 4 + 1];
+      let b = data[i * 4 + 2];
+
+      // Brightness & Contrast
+      r = contrastFactor * (r - 128) + 128 + brightness;
+      g = contrastFactor * (g - 128) + 128 + brightness;
+      b = contrastFactor * (b - 128) + 128 + brightness;
+
+      r = Math.max(0, Math.min(255, r));
+      g = Math.max(0, Math.min(255, g));
+      b = Math.max(0, Math.min(255, b));
+
+      // Hue Rotation FX
+      if (fx.hue) {
+        [r, g, b] = this.effects.rotateHue(r, g, b, this.effects.hueAngle);
       }
 
-      const lum = 0.299 * r + 0.587 * g + 0.114 * b;
-      const val = state.invert ? 255 - lum : lum;
+      // Standard Luminance
+      let lum = 0.299 * r + 0.587 * g + 0.114 * b;
+      if (invert) lum = 255 - lum;
 
-      // Edge detection — Sobel
-      if (state.fx.edge && lumMap) {
-        const sobel = sobelAt(lumMap, x, y, state.numCols, rows);
-        if (sobel > EDGE_THRESHOLD) {
-          ctx.fillStyle = colorFn(r, g, b, val);
-          ctx.fillText('@', x * state.fontW, y * state.fontSize);
+      lumGrid[i] = Math.max(0, Math.min(255, Math.round(lum)));
+      rGrid[i] = r;
+      gGrid[i] = g;
+      bGrid[i] = b;
+    }
+
+    // Sobel Edge Detection FX
+    let edgeResult = null;
+    if (fx.edge) {
+      edgeResult = this.effects.applySobelEdge(lumGrid, cols, rows, 40);
+    }
+
+    // Rain FX update
+    if (fx.rain) {
+      this.effects.updateRain(cols, rows);
+    }
+
+    // Character ramp selection
+    const ramp = this.state.getCurrentRamp();
+    const rampLen = ramp.length;
+
+    // Build Character & Color Matrix
+    const outChars = new Array(totalPixels);
+    const outColors = new Array(totalPixels);
+    let plainText = '';
+
+    const colorMode = this.state.get('colorMode');
+    let darkRgb = [0, 0, 0];
+    let brightRgb = [255, 255, 255];
+
+    if (colorMode === 'custom') {
+      darkRgb = this.hexToRgb(this.state.get('customColorDark'));
+      brightRgb = this.hexToRgb(this.state.get('customColorBright'));
+    } else if (CONFIG.COLOR_PALETTES[colorMode]?.type === 'gradient') {
+      const p = CONFIG.COLOR_PALETTES[colorMode];
+      darkRgb = this.hexToRgb(p.dark);
+      brightRgb = this.hexToRgb(p.bright);
+    }
+
+    // Glitch row shifts
+    let glitchActive = fx.glitch && Math.random() < 0.35;
+    let glitchRow = glitchActive ? Math.floor(Math.random() * rows) : -1;
+    let glitchShift = glitchActive ? Math.floor((Math.random() - 0.5) * 12) : 0;
+
+    for (let y = 0; y < rows; y++) {
+      let rowShift = (y === glitchRow) ? glitchShift : 0;
+
+      for (let x = 0; x < cols; x++) {
+        const sampleX = Math.max(0, Math.min(cols - 1, x + rowShift));
+        const idx = y * cols + sampleX;
+        const outIdx = y * cols + x;
+
+        let lum = lumGrid[idx];
+        let charCode = '';
+
+        // Edge detection char override
+        if (fx.edge && edgeResult && edgeResult.edgeGrid[idx] > 0) {
+          const dir = edgeResult.dirGrid[idx];
+          if (dir === 1) charCode = CONFIG.EDGE_CHARS.horizontal;
+          else if (dir === 2) charCode = CONFIG.EDGE_CHARS.vertical;
+          else if (dir === 3) charCode = CONFIG.EDGE_CHARS.diagForward;
+          else if (dir === 4) charCode = CONFIG.EDGE_CHARS.diagBack;
+          else charCode = CONFIG.EDGE_CHARS.cross;
+        } else {
+          // Standard Luminance mapping
+          const rampIdx = Math.floor((lum / 256) * rampLen);
+          charCode = ramp[Math.min(rampLen - 1, rampIdx)];
         }
-        continue;
+
+        // Glitch noise chars
+        if (fx.glitch && Math.random() < 0.02) {
+          const gChars = '!@#$%^&*░▒▓█~><+=';
+          charCode = gChars[Math.floor(Math.random() * gChars.length)];
+        }
+
+        // Rain FX overlay
+        let isRainHead = false;
+        let isRainTail = false;
+        if (fx.rain && this.effects.rainColumns[x]) {
+          const drop = this.effects.rainColumns[x];
+          const dist = y - drop.y;
+          if (dist >= 0 && dist < drop.length) {
+            const matrixChars = CONFIG.CHARSETS.matrix;
+            charCode = matrixChars[Math.floor(Math.random() * matrixChars.length)];
+            if (dist < 1) isRainHead = true;
+            else isRainTail = true;
+          }
+        }
+
+        // Color calculation
+        let colorStr = '#ffffff';
+
+        if (isRainHead) {
+          colorStr = '#ffffff';
+        } else if (isRainTail) {
+          colorStr = '#00ff66';
+        } else if (colorMode === 'real') {
+          let cr = rGrid[idx];
+          let cg = gGrid[idx];
+          let cb = bGrid[idx];
+
+          // Chromatic Aberration FX
+          if (fx.ca) {
+            const rIdx = y * cols + Math.max(0, x - 2);
+            const bIdx = y * cols + Math.min(cols - 1, x + 2);
+            cr = rGrid[rIdx];
+            cb = bGrid[bIdx];
+          }
+
+          if (invert) {
+            cr = 255 - cr;
+            cg = 255 - cg;
+            cb = 255 - cb;
+          }
+
+          colorStr = `rgb(${cr},${cg},${cb})`;
+        } else if (colorMode === 'rainbow') {
+          const hue = ((x / cols) * 360 + this.animTime * 40 + lum) % 360;
+          colorStr = `hsl(${hue}, 100%, ${Math.max(20, (lum / 255) * 80)}%)`;
+        } else {
+          // Gradient or Custom color lerp
+          const t = lum / 255;
+          const [cr, cg, cb] = this.lerpColor(darkRgb, brightRgb, t);
+          colorStr = `rgb(${cr},${cg},${cb})`;
+        }
+
+        outChars[outIdx] = charCode;
+        outColors[outIdx] = colorStr;
+        plainText += charCode;
       }
-
-      // Glitch — random character injection
-      if (state.fx.glitch && Math.random() < GLITCH_PROBABILITY) {
-        const matrixChars = CHAR_SETS.matrix;
-        const ch = matrixChars[Math.floor(Math.random() * matrixChars.length)];
-        ctx.fillStyle = '#00ff41';
-        ctx.fillText(ch, x * state.fontW, y * state.fontSize);
-        continue;
-      }
-
-      const idx = Math.max(0, Math.min(maxIdx, Math.floor(val / 255 * maxIdx)));
-      const ch  = state.charSet[idx];
-      if (!ch || !ch.trim()) continue;
-
-      ctx.fillStyle = colorFn(r, g, b, val);
-      ctx.fillText(ch, x * state.fontW, y * state.fontSize);
+      plainText += '\n';
     }
-  }
 
-  // Post-process overlays
-  if (state.fx.rain) effects.drawRain(state.numCols, rows);
-  if (state.fx.scan) effects.drawScanlines();
+    this.state.set('lastAsciiText', plainText);
+
+    // Render Characters to Canvas
+    const canvasW = cols * this.charWidth;
+    const canvasH = rows * this.charHeight;
+
+    if (this.canvas.width !== canvasW || this.canvas.height !== canvasH) {
+      this.canvas.width = canvasW;
+      this.canvas.height = canvasH;
+    }
+
+    // Set Background
+    const bgL = this.state.get('bgLightness');
+    this.ctx.fillStyle = `rgb(${bgL}, ${bgL}, ${bgL})`;
+    this.ctx.fillRect(0, 0, canvasW, canvasH);
+
+    // Text rendering setup
+    this.ctx.font = `${fontSize}px 'Share Tech Mono', monospace`;
+    this.ctx.textBaseline = 'top';
+
+    for (let y = 0; y < rows; y++) {
+      const posY = y * this.charHeight;
+      const isScanlineDim = fx.scan && (y % 2 === 1);
+
+      for (let x = 0; x < cols; x++) {
+        const idx = y * cols + x;
+        const char = outChars[idx];
+        if (char === ' ') continue;
+
+        const posX = x * this.charWidth;
+        this.ctx.fillStyle = outColors[idx];
+
+        if (isScanlineDim) {
+          this.ctx.globalAlpha = 0.6;
+        } else {
+          this.ctx.globalAlpha = 1.0;
+        }
+
+        this.ctx.fillText(char, posX, posY);
+      }
+    }
+    this.ctx.globalAlpha = 1.0;
+  }
 }
 
-// ── Text export ──────────────────────────────────────────
-function generateTextFrame() {
-  const src  = state.sourceMode === 'image' ? state.imgBitmap : document.getElementById('video');
-  const srcW = state.sourceMode === 'image' ? (state.imgBitmap?.width  || 640) : (src.videoWidth  || 640);
-  const srcH = state.sourceMode === 'image' ? (state.imgBitmap?.height || 480) : (src.videoHeight || 480);
-  const rows = Math.max(1, Math.round(state.numCols * (srcH / srcW) * (state.fontW / state.fontSize)));
-
-  sample.width  = state.numCols;
-  sample.height = rows;
-  sCtx.drawImage(src, 0, 0, state.numCols, rows);
-
-  let pixels;
-  try {
-    pixels = sCtx.getImageData(0, 0, state.numCols, rows).data;
-  } catch (e) {
-    return null;
-  }
-
-  const maxIdx = state.charSet.length - 1;
-  let text = '';
-
-  for (let y = 0; y < rows; y++) {
-    for (let x = 0; x < state.numCols; x++) {
-      const i   = (y * state.numCols + x) * 4;
-      const lum = 0.299 * pixels[i] + 0.587 * pixels[i + 1] + 0.114 * pixels[i + 2];
-      const val = state.invert ? 255 - lum : lum;
-      const idx = Math.max(0, Math.min(maxIdx, Math.floor(val / 255 * maxIdx)));
-      text += state.charSet[idx] || ' ';
-    }
-    text += '\n';
-  }
-
-  return text;
-}
+window.AsciiRenderer = AsciiRenderer;
