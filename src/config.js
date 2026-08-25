@@ -1,43 +1,68 @@
 /**
- * config.js — ASCII CAM
- * Static configuration: character sets, defaults, constants.
+ * ASCII CAM - Configuration & Presets
  */
 
-'use strict';
+const CONFIG = {
+  // Preset character ramps ordered from lightest (empty) to darkest (solid)
+  CHARSETS: {
+    detailed: " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$",
+    simple: " .:-=+*#%@",
+    blocks: "  ░▒▓█",
+    binary: " 01",
+    matrix: " .·:=+*0123456789ﾊﾐﾋｰｳｼﾅﾓﾆｻﾜﾂｵﾘｱﾎﾃﾏｹﾒｴｶｷﾑﾕﾗｾﾈｽﾀﾇﾍ",
+    braille: " ⠁⠂⠃⠄⠅⠆⠇⠈⠉⠊⠋⠌⠍⠎⠏⠐⠑⠒⠓⠔⠕⠖⠗⠘⠙⠚⠛⠜⠝⠞⠟⠠⠡⠢⠣⠤⠥⠦⠧⠨⠩⠪⠫⠬⠭⠮⠯⠰⠱⠲⠳⠴⠵⠶⠷⠸⠹⠺⠻⠼⠽⠾⠿⣿",
+    minimal: " ·:*#",
+    custom_chars: " .:-=+*#%@"
+  },
 
-const CHAR_SETS = {
-  detailed:     ' .`-_\':,;r^=+/"|\\<>ivxclrs{}#@',
-  simple:       ' .oO0@',
-  blocks:       ' ░▒▓█',
-  binary:       ' 01',
-  matrix:       ' ｦｧｨｩｪｫｬｭｮｯｱｲｳｴｵ01',
-  braille:      ' ⠁⠂⠃⠄⠅⠆⠇⠈⠉⠊⠋⠌⠍⠎⠏⠿',
-  minimal:      ' ·∙•',
-  custom_chars: ' .oO@',
+  // Color preset mapping
+  COLOR_PALETTES: {
+    real: { type: 'real' },
+    green: { type: 'gradient', dark: '#021807', bright: '#00ff66' },
+    amber: { type: 'gradient', dark: '#1c0e00', bright: '#ffaa00' },
+    cyan: { type: 'gradient', dark: '#001824', bright: '#00f0ff' },
+    red: { type: 'gradient', dark: '#240008', bright: '#ff2d55' },
+    purple: { type: 'gradient', dark: '#180026', bright: '#c042ff' },
+    white: { type: 'gradient', dark: '#181818', bright: '#f5f5f7' },
+    rainbow: { type: 'rainbow' },
+    custom: { type: 'custom' }
+  },
+
+  // Directional edge characters for Edge effect
+  EDGE_CHARS: {
+    horizontal: "-",
+    vertical: "|",
+    diagForward: "/",
+    diagBack: "\\",
+    cross: "+",
+    corner: "#"
+  },
+
+  // Default state initialization
+  DEFAULTS: {
+    source: 'camera', // 'camera' | 'image'
+    charSet: 'detailed',
+    customChars: ' .:-=+*#%@',
+    fontSize: 13,
+    colorMode: 'real',
+    customColorDark: '#000000',
+    customColorBright: '#ff00ff',
+    brightness: 0,
+    contrast: 0,
+    bgLightness: 10,
+    cols: 90,
+    fpsCap: 20,
+    mirror: true,
+    invert: false,
+    fx: {
+      glitch: false,
+      rain: false,
+      hue: false,
+      edge: false,
+      ca: false,
+      scan: false
+    }
+  }
 };
 
-const DEFAULTS = {
-  numCols:    90,
-  fontSize:   13,
-  fpsInterval: 50,   // 1000 / 20fps
-  bgLevel:    10,
-  brightness: 0,
-  contrast:   0,
-  mirror:     true,
-  invert:     false,
-  charSet:    'detailed',
-  colorMode:  'real',
-};
-
-const COLOR_MODES = [
-  'real', 'green', 'amber', 'cyan',
-  'red', 'purple', 'white', 'rainbow', 'custom',
-];
-
-const FX_NAMES = ['glitch', 'rain', 'hue', 'edge', 'ca', 'scan'];
-
-// Sobel edge threshold (0–255 luminance delta)
-const EDGE_THRESHOLD = 40;
-
-// Glitch probability per-character per-frame
-const GLITCH_PROBABILITY = 0.005;
+window.CONFIG = CONFIG;
